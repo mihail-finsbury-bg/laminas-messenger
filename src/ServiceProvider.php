@@ -43,6 +43,6 @@ class ServiceProvider implements ServiceProviderInterface
 
     public function getProvidedServices(): array
     {
-        return $this->providedServices;
+        return array_fill_keys(array_keys($this->factories), '?');
     }
 }

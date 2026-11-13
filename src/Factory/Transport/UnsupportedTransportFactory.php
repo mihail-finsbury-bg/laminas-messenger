@@ -9,6 +9,9 @@ use Symfony\Component\Messenger\Transport\TransportFactoryInterface;
 use Symfony\Component\Messenger\Transport\TransportInterface;
 use TMV\Laminas\Messenger\Exception\RuntimeException;
 
+/**
+ * @implements TransportFactoryInterface<TransportInterface>
+ */
 final class UnsupportedTransportFactory implements TransportFactoryInterface
 {
     public function createTransport(string $dsn, array $options, SerializerInterface $serializer): TransportInterface

@@ -19,6 +19,19 @@ class ConfigProviderTest extends TestCase
         $this->assertArrayHasKey('factories', $dependencies);
     }
 
+    public function testRegisteredSymfonyServicesExist(): void
+    {
+        $config = (new ConfigProvider())();
+        foreach (array_keys($config['dependencies']['factories']) as $service) {
+            if (str_starts_with($service, 'Symfony\\Component\\Messenger\\')) {
+                self::assertTrue(class_exists($service), $service);
+            }
+        }
+        foreach ($config['messenger']['transport_factories'] as $factory) {
+            self::assertTrue(class_exists($factory), $factory);
+        }
+    }
+
     public function testInvoke(): void
     {
         $provider = new ConfigProvider();

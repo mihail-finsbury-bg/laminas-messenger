@@ -12,7 +12,6 @@ use Symfony\Component\Messenger\EventListener\DispatchPcntlSignalListener;
 use Symfony\Component\Messenger\EventListener\SendFailedMessageForRetryListener;
 use Symfony\Component\Messenger\EventListener\SendFailedMessageToFailureTransportListener;
 use Symfony\Component\Messenger\EventListener\StopWorkerOnRestartSignalListener;
-use Symfony\Component\Messenger\EventListener\StopWorkerOnSigtermSignalListener;
 use TMV\Laminas\Messenger\Factory\EventDispatcherFactory;
 
 class EventDispatcherFactoryTest extends TestCase
@@ -65,9 +64,6 @@ class EventDispatcherFactoryTest extends TestCase
             ],
         ]);
 
-        $container->get(StopWorkerOnSigtermSignalListener::class)
-            ->shouldBeCalled()
-            ->willReturn($this->getListeners()['event1']);
         $container->get(DispatchPcntlSignalListener::class)
             ->shouldBeCalled()
             ->willReturn($this->getListeners()['event2']);
@@ -82,7 +78,7 @@ class EventDispatcherFactoryTest extends TestCase
 
         $instance = $factory($container->reveal());
 
-        $this->assertCount(3, $instance->getListeners());
+        $this->assertCount(2, $instance->getListeners());
     }
 
     public function testFactoryWithFailureTransport(): void
@@ -96,9 +92,6 @@ class EventDispatcherFactoryTest extends TestCase
             ],
         ]);
 
-        $container->get(StopWorkerOnSigtermSignalListener::class)
-            ->shouldBeCalled()
-            ->willReturn($this->getListeners()['event1']);
         $container->get(DispatchPcntlSignalListener::class)
             ->shouldBeCalled()
             ->willReturn($this->getListeners()['event2']);
@@ -113,7 +106,7 @@ class EventDispatcherFactoryTest extends TestCase
 
         $instance = $factory($container->reveal());
 
-        $this->assertCount(4, $instance->getListeners());
+        $this->assertCount(3, $instance->getListeners());
     }
 
     public function testFactoryWithStopWorkerListener(): void
@@ -127,9 +120,6 @@ class EventDispatcherFactoryTest extends TestCase
             ],
         ]);
 
-        $container->get(StopWorkerOnSigtermSignalListener::class)
-            ->shouldBeCalled()
-            ->willReturn($this->getListeners()['event1']);
         $container->get(DispatchPcntlSignalListener::class)
             ->shouldBeCalled()
             ->willReturn($this->getListeners()['event2']);
@@ -144,6 +134,6 @@ class EventDispatcherFactoryTest extends TestCase
 
         $instance = $factory($container->reveal());
 
-        $this->assertCount(4, $instance->getListeners());
+        $this->assertCount(3, $instance->getListeners());
     }
 }

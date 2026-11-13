@@ -10,6 +10,8 @@ use Doctrine\Persistence\ManagerRegistry;
 use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Exception\UnrecoverableMessageHandlingException;
+use Symfony\Component\Messenger\Exception\HandlerFailedException;
+use Symfony\Component\Messenger\Stamp\HandledStamp;
 use Symfony\Component\Messenger\Test\Middleware\MiddlewareTestCase;
 use TMV\Laminas\Messenger\Bridge\Doctrine\Middleware\DoctrineTransactionMiddleware;
 
@@ -82,6 +84,25 @@ class DoctrineTransactionMiddlewareTest extends MiddlewareTestCase
         self::assertNotNull($previous);
         self::assertInstanceOf(\RuntimeException::class, $previous);
         self::assertSame('Thrown from next middleware.', $previous->getMessage());
+    }
+
+    public function testHandlerFailurePreservesWrappedExceptionsAndRemovesHandledStamps(): void
+    {
+        $envelope = new Envelope(new \stdClass(), [new HandledStamp(null, 'successful_handler')]);
+        $cause = new \RuntimeException('Handler failed');
+        $failure = new HandlerFailedException($envelope, [$cause]);
+        $stack = $this->getThrowingStackMock($failure);
+        $this->connection->expects($this->once())->method('isTransactionActive')->willReturn(true);
+        $this->connection->expects($this->once())->method('rollBack');
+        $this->entityManager->expects($this->never())->method('flush');
+
+        try {
+            $this->middleware->handle($envelope, $stack);
+            self::fail('Expected a handler failure');
+        } catch (HandlerFailedException $exception) {
+            self::assertSame([$cause], $exception->getWrappedExceptions());
+            self::assertSame([], $exception->getEnvelope()->all(HandledStamp::class));
+        }
     }
 
     public function testInvalidEntityManagerThrowsException()

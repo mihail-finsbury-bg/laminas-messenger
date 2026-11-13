@@ -1,13 +1,20 @@
 # laminas-messenger
 
-[![Latest Stable Version](https://poser.pugx.org/thomasvargiu/laminas-messenger/v/stable)](https://packagist.org/packages/thomasvargiu/laminas-messenger)
-[![Total Downloads](https://poser.pugx.org/thomasvargiu/laminas-messenger/downloads)](https://packagist.org/packages/thomasvargiu/laminas-messenger)
-[![License](https://poser.pugx.org/thomasvargiu/laminas-messenger/license)](https://packagist.org/packages/thomasvargiu/laminas-messenger)
-[![Code Coverage](https://scrutinizer-ci.com/g/thomasvargiu/laminas-messenger/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/thomasvargiu/laminas-messenger/?branch=master)
-[![Build Status](https://scrutinizer-ci.com/g/thomasvargiu/laminas-messenger/badges/build.png?b=master)](https://scrutinizer-ci.com/g/thomasvargiu/laminas-messenger/build-status/master)
-[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/thomasvargiu/laminas-messenger/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/thomasvargiu/laminas-messenger/?branch=master)
+Factories to use Symfony Messenger in Laminas and Mezzio applications.
 
-Factories to use the Symfony Messenger in Laminas and Mezzio applications (ex zend-framework and zend-expressive)
+This maintained fork of `thomasvargiu/laminas-messenger` targets PHP 8.2+ and
+Symfony Messenger, Console, and EventDispatcher 7.4. It preserves the
+`TMV\Laminas\Messenger` namespace and existing module/configuration API.
+
+Install `mihail-finsbury-bg/laminas-messenger` in place of the upstream package.
+Until a release is published, configure this fork as a Composer VCS repository
+and require its actual branch or commit. Do not install both packages: they
+provide the same PHP classes. No `replace` declaration is made for upstream
+versions that this fork no longer supports.
+
+Install the matching `^7.4` transport bridge separately when using Doctrine,
+AMQP, or Redis. These bridges are development dependencies of this library,
+not runtime dependencies automatically installed for consumers.
 
 ## Usage
 
@@ -45,7 +52,7 @@ return [
     'messenger' => [
         'failure_transport' => null, // your failure transport service name (optional)
         'logger' => null, // your custom logger service name (optional)
-        'default_serializer' => SFMessenger\Transport\Serialization\PhpSerializer::class, // default messenger serializer, it should be a service name
+        'default_serializer' => Messenger\Transport\Serialization\PhpSerializer::class, // default messenger serializer, it should be a service name
         'cache_pool_for_restart_signal' => null, // CacheItemPoolInterface service name implementation if you want to use stop workers command
         'transport_factories' => [
             // here you can add your custom transport factories services
@@ -114,3 +121,26 @@ For every message, wrap the message handler with a transaction.
 #### `TMV\Laminas\Messenger\Subscriber\DoctrineClearEntityManagerWorkerSubscriber`
 
 This subscriber clear the EntityManager after a message is handled in a worker.
+
+## Worker lifecycle
+
+Messenger Console commands handle SIGTERM and SIGINT gracefully when PHP's PCNTL
+extension is available. Run workers through a Symfony Console application (or
+Laminas CLI); the removed `StopWorkerOnSigtermSignalListener` is no longer registered.
+
+The global `failure_transport` remains a transport service name. Failures from
+all configured transport and receiver names go to that sender after retries
+are exhausted. The failure transport must also be a configured receiver to use
+the failed-message show, retry, and remove commands.
+
+Container resets and keepalive are not enabled by this integration. Register
+Doctrine middleware/subscribers explicitly when needed; upgrading Messenger
+does not add entity-manager cleanup automatically. Existing `PhpSerializer`
+configuration is preserved.
+
+## Development
+
+Run `composer validate --strict`, `composer test`, `composer cs-check`, and
+`composer psalm` with PHP 8.2+ and the development dependencies installed.
+AMQP requires `ext-amqp`; PCNTL and POSIX are needed for signal regression tests.
+Worker integration tests use in-memory transports and require no broker.

@@ -6,7 +6,10 @@ namespace TMV\Laminas\Messenger\Factory\Listener;
 
 use Psr\Container\ContainerInterface;
 use Symfony\Component\Messenger\EventListener\SendFailedMessageToFailureTransportListener;
+use Symfony\Component\Messenger\Transport\Sender\SenderInterface;
+use Symfony\Contracts\Service\ServiceProviderInterface;
 use TMV\Laminas\Messenger\Exception\InvalidArgumentException;
+use TMV\Laminas\Messenger\ServiceProvider;
 
 /**
  * @psalm-api
@@ -28,8 +31,20 @@ final class SendFailedMessageToFailureTransportListenerFactory
         /** @var string|null $logger */
         $logger = $config['messenger']['logger'] ?? null;
 
+        /** @var ServiceProviderInterface $receivers */
+        $receivers = $container->get('messenger.receivers_locator');
+        $senders = [];
+        foreach ($receivers->getProvidedServices() as $receiverName => $_) {
+            $senders[$receiverName] = static function () use ($container, $failureTransportName): SenderInterface {
+                /** @var SenderInterface $sender */
+                $sender = $container->get($failureTransportName);
+
+                return $sender;
+            };
+        }
+
         return new SendFailedMessageToFailureTransportListener(
-            $container->get($failureTransportName),
+            new ServiceProvider($senders),
             $logger && $container->has($logger) ? $container->get($logger) : null,
         );
     }

@@ -171,7 +171,6 @@
   </file>
   <file src="src/Factory/Listener/SendFailedMessageToFailureTransportListenerFactory.php">
     <MixedArgument>
-      <code><![CDATA[$container->get($failureTransportName)]]></code>
       <code><![CDATA[$logger && $container->has($logger) ? $container->get($logger) : null]]></code>
     </MixedArgument>
     <RiskyTruthyFalsyComparison>
@@ -363,18 +362,6 @@
       <code><![CDATA[$serializerName]]></code>
     </RiskyTruthyFalsyComparison>
   </file>
-  <file src="src/Factory/Transport/TransportProviderFactory.php">
-    <InvalidArgument>
-      <code><![CDATA[new ServiceManager(['factories' => $factories])]]></code>
-    </InvalidArgument>
-    <RedundantCastGivenDocblockType>
-      <code><![CDATA[(string) $name]]></code>
-      <code><![CDATA[(string) $name]]></code>
-    </RedundantCastGivenDocblockType>
-    <TooManyArguments>
-      <code><![CDATA[new ServiceProvider(new ServiceManager(['factories' => $factories]), $factories)]]></code>
-    </TooManyArguments>
-  </file>
   <file src="src/Handler/ContainerHandlersLocator.php">
     <InvalidDocblock>
       <code><![CDATA[private $handlers;]]></code>
@@ -429,13 +416,5 @@
     <UnusedClass>
       <code><![CDATA[DoctrineTransactionMiddleware]]></code>
     </UnusedClass>
-  </file>
-  <file src="src/ServiceProvider.php">
-    <MixedReturnStatement>
-      <code><![CDATA[$this->providedServices]]></code>
-    </MixedReturnStatement>
-    <UndefinedThisPropertyFetch>
-      <code><![CDATA[$this->providedServices]]></code>
-    </UndefinedThisPropertyFetch>
   </file>
 </files>

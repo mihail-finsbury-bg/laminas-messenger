@@ -12,7 +12,6 @@ use Symfony\Component\Messenger\EventListener\DispatchPcntlSignalListener;
 use Symfony\Component\Messenger\EventListener\SendFailedMessageForRetryListener;
 use Symfony\Component\Messenger\EventListener\SendFailedMessageToFailureTransportListener;
 use Symfony\Component\Messenger\EventListener\StopWorkerOnRestartSignalListener;
-use Symfony\Component\Messenger\EventListener\StopWorkerOnSigtermSignalListener;
 
 use function array_map;
 use function array_merge;
@@ -32,7 +31,6 @@ final class EventDispatcherFactory
         /** @var EventSubscriberInterface[] $subscribers */
         $subscribers = [
             DispatchPcntlSignalListener::class,
-            StopWorkerOnSigtermSignalListener::class,
             SendFailedMessageForRetryListener::class,
         ];
 

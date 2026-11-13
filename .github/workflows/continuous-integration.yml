@@ -11,13 +11,11 @@ on:
 jobs:
   phpunit:
     name: "Tests"
-    runs-on: "ubuntu-20.04"
+    runs-on: "ubuntu-latest"
 
     strategy:
       matrix:
         php-version:
-          - "8.0"
-          - "8.1"
           - "8.2"
           - "8.3"
           - "8.4"
@@ -26,7 +24,7 @@ jobs:
         composer-options:
           - "--prefer-dist"
         include:
-          - php-version: "8.1"
+          - php-version: "8.2"
             deps: "lowest"
 
 
@@ -40,6 +38,7 @@ jobs:
         uses: "shivammathur/setup-php@v2"
         with:
           php-version: "${{ matrix.php-version }}"
+          extensions: amqp, pcntl
           coverage: "pcov"
           ini-values: "zend.assertions=1"
 
@@ -66,7 +65,7 @@ jobs:
           PHP_CS_FIXER_IGNORE_ENV: true
   Psalm:
     name: "Psalm"
-    runs-on: "ubuntu-20.04"
+    runs-on: "ubuntu-latest"
     steps:
       - name: "Checkout"
         uses: "actions/checkout@v4"
@@ -77,6 +76,7 @@ jobs:
         uses: "shivammathur/setup-php@v2"
         with:
           php-version: "8.3"
+          extensions: amqp, pcntl
 
       - name: "Install dependencies"
         uses: ramsey/composer-install@v3

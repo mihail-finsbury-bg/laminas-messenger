@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace TMV\Laminas\Messenger\Factory\Transport;
 
-use Laminas\ServiceManager\ServiceManager;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\Messenger\Transport\TransportInterface;
 use Symfony\Contracts\Service\ServiceProviderInterface;
@@ -21,14 +20,14 @@ class TransportProviderFactory
         $transportNames = array_keys($config['messenger']['transports'] ?? []);
 
         foreach ($transportNames as $name) {
-            $factories[(string) $name] = static function () use ($name, $container): TransportInterface {
+            $factories[$name] = static function () use ($name, $container): TransportInterface {
                 /** @var TransportInterface $transport */
-                $transport = $container->get((string) $name);
+                $transport = $container->get($name);
 
                 return $transport;
             };
         }
 
-        return new ServiceProvider(new ServiceManager(['factories' => $factories]), $factories);
+        return new ServiceProvider($factories);
     }
 }

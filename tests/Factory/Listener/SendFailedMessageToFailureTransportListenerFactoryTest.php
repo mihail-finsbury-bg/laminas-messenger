@@ -12,6 +12,10 @@ use Symfony\Component\Messenger\EventListener\SendFailedMessageToFailureTranspor
 use Symfony\Component\Messenger\Transport\TransportInterface;
 use TMV\Laminas\Messenger\Exception\InvalidArgumentException;
 use TMV\Laminas\Messenger\Factory\Listener\SendFailedMessageToFailureTransportListenerFactory;
+use TMV\Laminas\Messenger\ServiceProvider;
+use Symfony\Component\Messenger\Envelope;
+use Symfony\Component\Messenger\Event\WorkerMessageFailedEvent;
+use Prophecy\Argument;
 
 class SendFailedMessageToFailureTransportListenerFactoryTest extends TestCase
 {
@@ -32,6 +36,8 @@ class SendFailedMessageToFailureTransportListenerFactoryTest extends TestCase
         $sender = $this->prophesize(TransportInterface::class);
         $logger = $this->prophesize(LoggerInterface::class);
 
+        $container->get('messenger.receivers_locator')->willReturn(new ServiceProvider(['async' => static function () {}]));
+        $sender->send(Argument::type(Envelope::class))->willReturnArgument(0)->shouldBeCalled();
         $container->get('failure-transport-name')
             ->shouldBeCalled()
             ->willReturn($sender->reveal());
@@ -46,6 +52,7 @@ class SendFailedMessageToFailureTransportListenerFactoryTest extends TestCase
         $service = $factory($container->reveal());
 
         $this->assertInstanceOf(SendFailedMessageToFailureTransportListener::class, $service);
+        $service->onMessageFailed(new WorkerMessageFailedEvent(new Envelope(new \stdClass()), 'async', new \RuntimeException('Failed')));
     }
 
     public function testFactoryShouldWorkWithoutLogger(): void
@@ -62,6 +69,8 @@ class SendFailedMessageToFailureTransportListenerFactoryTest extends TestCase
 
         $sender = $this->prophesize(TransportInterface::class);
 
+        $container->get('messenger.receivers_locator')->willReturn(new ServiceProvider(['async' => static function () {}]));
+        $sender->send(Argument::type(Envelope::class))->willReturnArgument(0)->shouldBeCalled();
         $container->get('failure-transport-name')
             ->shouldBeCalled()
             ->willReturn($sender->reveal());
@@ -70,6 +79,7 @@ class SendFailedMessageToFailureTransportListenerFactoryTest extends TestCase
         $service = $factory($container->reveal());
 
         $this->assertInstanceOf(SendFailedMessageToFailureTransportListener::class, $service);
+        $service->onMessageFailed(new WorkerMessageFailedEvent(new Envelope(new \stdClass()), 'async', new \RuntimeException('Failed')));
     }
 
     public function testFactoryShouldThrowExceptionWithoutFailureTransport(): void
